@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Alavancagem e Soros</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+        }
+        
+        input[type="number"], input[type="text"], select {
+            transition: all 0.2s;
+        }
+        input[type="number"]:focus, input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        .tabs-container::-webkit-scrollbar { height: 6px; }
+        .tabs-container::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
+        .tabs-container::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        .tabs-container::-webkit-scrollbar-thumb:hover { background: #64748b; }
+    </style>
+</head>
+<body class="text-slate-200 min-h-screen flex flex-col">
+
+    <nav class="bg-slate-900 border-b border-slate-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 md:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0 flex items-center gap-2">
+                    <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                    <span class="font-bold text-xl text-white tracking-tight">Alavanca<span class="text-blue-500">Pro</span></span>
+                </div>
+                <div class="flex space-x-1 md:space-x-4">
+                    <button onclick="switchView('app')" id="nav-app" class="nav-btn bg-slate-800 text-white px-3 py-2 rounded-md text-sm font-medium transition">Calculadora</button>
+                    <button onclick="switchView('intro')" id="nav-intro" class="nav-btn text-slate-300 hover:bg-slate-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition">Introdução</button>
+                    <button onclick="switchView('tips')" id="nav-tips" class="nav-btn text-slate-300 hover:bg-slate-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition">Dicas Mentais</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-1 w-full max-w-7xl mx-auto p-4 md:p-8">
+        
+        <div id="view-app" class="view-section">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                
+                <div class="space-y-6 lg:col-span-1">
+                    
+                    <div class="bg-slate-800 p-5 rounded-xl shadow-lg border border-slate-700/50">
+                        <h2 class="text-lg font-semibold mb-4 text-white flex items-center gap-2">
+                            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            Nova Alavancagem
+                        </h2>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1 uppercase tracking-wider">Nome</label>
+                                <input type="text" id="inputName" placeholder="Ex: Projeto Sexta-feira" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-400 mb-1 uppercase tracking-wider">Banca (R$)</label>
+                                    <input type="number" id="inputInitial" value="50" step="1" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-400 mb-1 uppercase tracking-wider">Odd Média</label>
+                                    <input type="number" id="inputOdd" value="1.30" step="0.01" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1 uppercase tracking-wider">Número de Entradas</label>
+                                <input type="number" id="inputSteps" value="5" step="1" min="1" max="50" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm">
+                            </div>
+                            
+                            <button onclick="createWorkspace()" class="w-full mt-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 px-4 rounded-lg transition shadow-lg shadow-blue-900/20">
+                                Criar Gabarito
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-800 p-5 rounded-xl shadow-lg border border-slate-700/50">
+                        <h2 class="text-lg font-semibold mb-4 text-white flex items-center gap-2">
+                            <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
+                            Calculadora de Rota
+                        </h2>
+                        <p class="text-xs text-slate-400 mb-3">Descubra a odd necessária para atingir sua meta.</p>
+                        <div class="space-y-3">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-400 mb-1 uppercase tracking-wider">Disponível</label>
+                                    <input type="number" id="planInitial" value="50" step="1" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-400 mb-1 uppercase tracking-wider">Meta (R$)</label>
+                                    <input type="number" id="planTarget" value="1000" step="1" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1 uppercase tracking-wider">Perfil de Risco (Odd Alvo)</label>
+                                <select id="planRisk" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm">
+                                    <option value="very-low">Muito Seguro (Odd ~1.08)</option>
+                                    <option value="low">Baixo (Odd ~1.15)</option>
+                                    <option value="medium" selected>Médio (Odd ~1.30)</option>
+                                    <option value="high">Alto (Odd ~1.80)</option>
+                                    <option value="very-high">Kamikaze (Odd ~3.00+)</option>
+                                </select>
+                            </div>
+
+                            <button onclick="generatePlan()" class="w-full mt-2 bg-purple-600 hover:bg-purple-500 text-white font-semibold py-2.5 px-4 rounded-lg transition shadow-lg shadow-purple-900/20">
+                                Gerar Rota Exata
+                            </button>
+
+                            <div id="planResult" class="mt-4 p-3 bg-slate-900/50 border border-purple-500/30 rounded-lg hidden text-sm">
+                                </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-3 flex flex-col gap-4">
+                    
+                    <div class="flex items-center gap-2 overflow-x-auto tabs-container pb-2" id="tabsContainer">
+                        </div>
+
+                    <div class="bg-slate-800 rounded-xl shadow-xl border border-slate-700/50 overflow-hidden min-h-[500px] flex flex-col">
+                        
+                        <div id="emptyState" class="m-auto text-center p-8 text-slate-500">
+                            <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                            <p class="text-lg font-medium">Nenhuma alavancagem ativa.</p>
+                            <p class="text-sm">Crie uma nova na lateral ou simule uma rota.</p>
+                        </div>
+
+                        <div id="gabaritoContent" class="hidden flex-col h-full">
+                            <div class="p-6 border-b border-slate-700/50 bg-slate-800/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                <div class="flex-1 w-full sm:w-auto">
+                                    <div class="flex items-center gap-2 group cursor-pointer" onclick="enableNameEdit()" id="titleContainer">
+                                        <h2 id="activeProjectName" class="text-xl font-bold text-white">Nome do Projeto</h2>
+                                        <svg class="w-4 h-4 text-slate-500 opacity-0 group-hover:opacity-100 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                    </div>
+                                    <input type="text" id="editNameInput" class="hidden w-full max-w-xs bg-slate-900 border border-blue-500 rounded px-2 py-1 text-white text-xl font-bold focus:outline-none" onblur="saveNameEdit()" onkeypress="if(event.key === 'Enter') saveNameEdit()">
+                                    <p class="text-xs text-slate-400 mt-1">Gabarito de Execução</p>
+                                </div>
+                                <div id="statsHeader" class="text-sm text-right bg-slate-900 p-3 rounded-lg border border-slate-700/50 min-w-[200px]">
+                                    </div>
+                            </div>
+
+                            <div class="overflow-x-auto flex-1">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="bg-slate-900/50 text-slate-400 text-xs uppercase tracking-wider border-b border-slate-700/50">
+                                            <th class="p-4 font-medium">#</th>
+                                            <th class="p-4 font-medium">Valor Apostado</th>
+                                            <th class="p-4 font-medium">Odd (Editável)</th>
+                                            <th class="p-4 font-medium">Retorno Potencial</th>
+                                            <th class="p-4 font-medium text-center">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tableBody" class="divide-y divide-slate-700/50 text-sm">
+                                        </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="p-4 bg-slate-900/50 border-t border-slate-700/50 flex justify-end">
+                                <button onclick="deleteCurrentWorkspace()" class="text-xs text-red-400 hover:text-red-300 flex items-center gap-1 transition">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    Excluir Pasta
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-intro" class="view-section hidden max-w-4xl mx-auto space-y-8">
+            <div class="bg-slate-800 p-8 rounded-xl shadow-lg border border-slate-700">
+                <h1 class="text-3xl font-bold text-white mb-6 border-b border-slate-600 pb-4">O que é Alavancagem (Soros)?</h1>
+                
+                <div class="space-y-6 text-slate-300 leading-relaxed">
+                    <p>
+                        A estratégia de <strong>Soros</strong> (ou juros compostos em apostas/operações) consiste em pegar o lucro de uma operação bem-sucedida e somá-lo ao capital inicial para a próxima operação. O objetivo é transformar um capital muito pequeno em um montante significativo de forma rápida.
+                    </p>
+
+                    <div class="bg-slate-900 p-6 rounded-lg border-l-4 border-blue-500">
+                        <h3 class="text-xl font-semibold text-white mb-2">A Matemática Simples</h3>
+                        <p>Se você começa com R$ 50 e aposta numa odd 1.50:</p>
+                        <ul class="list-disc pl-5 mt-2 space-y-1">
+                            <li><strong>Entrada 1:</strong> Aposta R$ 50 (Odd 1.50) = Volta R$ 75</li>
+                            <li><strong>Entrada 2:</strong> Aposta os R$ 75 (Odd 1.50) = Volta R$ 112,50</li>
+                            <li><strong>Entrada 3:</strong> Aposta os R$ 112,50 (Odd 1.50) = Volta R$ 168,75</li>
+                        </ul>
+                    </div>
+
+                    <h3 class="text-2xl font-bold text-white mt-8">O Problema (A Armadilha)</h3>
+                    <p>
+                        Na planilha, tudo é perfeito. Na vida real, a estratégia é implacável: <strong>um único erro (Red) zera todo o progresso</strong>. Se você errar na entrada 1 ou na entrada 10, o resultado é o mesmo: banca zerada.
+                    </p>
+
+                    <h3 class="text-2xl font-bold text-white mt-8">Como usar este sistema?</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div class="bg-slate-700/30 p-4 rounded border border-slate-600">
+                            <h4 class="font-bold text-blue-400 mb-2">1. Calculadora Direta</h4>
+                            <p class="text-sm">Você sabe quantas entradas quer fazer e cria o plano. O gabarito permite ajustar as odds no meio do caminho, pois o mercado é dinâmico.</p>
+                        </div>
+                        <div class="bg-slate-700/30 p-4 rounded border border-slate-600">
+                            <h4 class="font-bold text-purple-400 mb-2">2. Calculadora de Rota</h4>
+                            <p class="text-sm">Você não sabe como chegar na meta. Informa quanto tem (ex: R$ 10) e a meta (ex: R$ 500). O sistema calcula quantas entradas seguidas e qual odd média você precisa buscar.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-tips" class="view-section hidden max-w-6xl mx-auto">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-white mb-2">As 30 Regras da Realidade</h1>
+                <p class="text-slate-400">O mercado não tem pena da sua planilha do Excel. Leia antes de operar.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="tipsGrid">
+                </div>
+        </div>
+
+    </main>
+
+    <script>
+        // ==========================================
+        // DADOS E ESTADO GERAL
+        // ==========================================
+        let workspaces = {};
+        let currentWsId = null;
+
+        const tips = [
+            "1. O mercado não sabe que você precisa pagar um boleto. Não force entradas.",
+            "2. Soros nível 5 com odd 1.30 tem menos de 26% de chance de bater. Aceite a matemática.",
+            "3. Red faz parte. Quebrar a banca porque tentou recuperar o red de forma desesperada não faz.",
+            "4. Gestão de banca é chato, mas perder tudo em 5 minutos é bem pior.",
+            "5. Se a odd despencou antes de você entrar, o valor evaporou. Pule e busque a próxima.",
+            "6. O green maravilhoso de ontem não garante absolutamente nada hoje.",
+            "7. Dinheiro de alavancagem é o 'dinheiro da pinga', nunca o dinheiro do aluguel.",
+            "8. Fechou 3 greens seguidos e o coração está acelerado? Encerra a aba e saca.",
+            "9. A ganância do apostador é o patrocinador oficial das casas de apostas.",
+            "10. Não opere o time do coração. A emoção emburrece a análise e esconde as estatísticas.",
+            "11. Odd de 1.10 não é 'dinheiro grátis'. É um risco enorme de 100% para lucrar 10%.",
+            "12. Fazer Cash Out cedo demais destrói o conceito matemático dos juros compostos.",
+            "13. Se você não tem paciência para analisar um jogo por 10 minutos, não merece o lucro.",
+            "14. VIP de Telegram não paga sua banca se der red. Confie na sua análise.",
+            "15. Você vai tomar um gol aos 95 minutos. Esteja psicologicamente preparado.",
+            "16. Nenhuma estratégia bate a falta de controle emocional.",
+            "17. Alavancagem precisa de consistência na filtragem, não de quantidade de apostas.",
+            "18. Metas diárias fixas te forçam a operar quando o mercado está horrível.",
+            "19. O All-in constante é uma bomba-relógio. Saiba a hora de guardar uma parte do lucro.",
+            "20. Respeite as linhas asiáticas. Meio gol de proteção salva muitas alavancagens.",
+            "21. Odd não é palpite da casa, é cálculo de probabilidade. Respeite o número.",
+            "22. Evite apostar em competições varzeanas só para bater a meta rápida.",
+            "23. Se você tomou red no primeiro degrau da alavancagem, amanhã você tenta de novo. Pare por hoje.",
+            "24. Acompanhe a partida. A estatística pré-jogo vira pó se o zagueiro for expulso com 5 minutos.",
+            "25. Você não é obrigado a chegar no último nível do gabarito. Sacar no meio do caminho é inteligência.",
+            "26. Mantenha um diário das alavancagens falhas. Descubra onde você fica ganancioso.",
+            "27. Volume alto de apostas diminui sua taxa de acerto. Escolha a dedo.",
+            "28. Cuidado com múltiplas (acumuladas). Elas multiplicam o lucro, mas também multiplicam o risco.",
+            "29. Operar cansado, com sono ou estressado é a forma mais rápida de zerar a conta.",
+            "30. O longo prazo é o único juiz que importa. Sobreviva hoje para operar amanhã."
+        ];
+
+        // Formatação monetária
+        const formatBRL = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+
+        // ==========================================
+        // NAVEGAÇÃO DE VIEWS
+        // ==========================================
+        function switchView(viewName) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            document.getElementById('view-' + viewName).classList.remove('hidden');
+
+            // Reset navbar styles
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-slate-800', 'text-white');
+                btn.classList.add('text-slate-300');
+            });
+            
+            // Set active navbar style
+            const activeBtn = document.getElementById('nav-' + viewName);
+            if(activeBtn) {
+                activeBtn.classList.remove('text-slate-300');
+                activeBtn.classList.add('bg-slate-800', 'text-white');
+            }
+        }
+
+        // ==========================================
+        // RENDER DE DICAS
+        // ==========================================
+        function renderTips() {
+            const grid = document.getElementById('tipsGrid');
+            tips.forEach((tip, index) => {
+                const isImportant = index % 5 === 0; // Destaca algumas
+                const border = isImportant ? 'border-blue-500/50' : 'border-slate-700';
+                const bg = isImportant ? 'bg-slate-800/80' : 'bg-slate-800/40';
+                
+                grid.innerHTML += `
+                    <div class="p-5 rounded-xl border ${border} ${bg} hover:bg-slate-700 transition">
+                        <p class="text-sm text-slate-300 leading-relaxed font-medium">${tip}</p>
+                    </div>
+                `;
+            });
+        }
+
+        // ==========================================
+        // LÓGICA DA CALCULADORA / GABARITO
+        // ==========================================
+        function createWorkspace() {
+            let nameInput = document.getElementById('inputName').value.trim();
+            const initial = parseFloat(document.getElementById('inputInitial').value);
+            const baseOdd = parseFloat(document.getElementById('inputOdd').value);
+            const steps = parseInt(document.getElementById('inputSteps').value);
+
+            if (isNaN(initial) || isNaN(baseOdd) || isNaN(steps) || steps < 1) {
+                alert('Parâmetros inválidos.'); return;
+            }
+
+            if (!nameInput) nameInput = `Alavancagem ${Object.keys(workspaces).length + 1}`;
+
+            const id = 'ws_' + Date.now();
+            let state = Array.from({length: steps}, () => ({ odd: baseOdd, status: 'pendente' }));
+
+            workspaces[id] = { id, name: nameInput, initialStake: initial, state };
+            currentWsId = id;
+            
+            document.getElementById('inputName').value = '';
+            renderTabs();
+            renderActiveWorkspace();
+        }
+
+        function switchWorkspace(id) {
+            currentWsId = id;
+            renderTabs();
+            renderActiveWorkspace();
+        }
+
+        function deleteCurrentWorkspace() {
+            if (!currentWsId) return;
+            if(confirm(`Excluir a pasta "${workspaces[currentWsId].name}"?`)) {
+                delete workspaces[currentWsId];
+                const remaining = Object.keys(workspaces);
+                currentWsId = remaining.length ? remaining[remaining.length - 1] : null;
+                renderTabs();
+                renderActiveWorkspace();
+            }
+        }
+
+        // ----- EDIÇÃO DE NOME (RENAME) -----
+        function enableNameEdit() {
+            if (!currentWsId) return;
+            const titleCont = document.getElementById('titleContainer');
+            const input = document.getElementById('editNameInput');
+            
+            titleCont.classList.add('hidden');
+            input.value = workspaces[currentWsId].name;
+            input.classList.remove('hidden');
+            input.focus();
+        }
+
+        function saveNameEdit() {
+            if (!currentWsId) return;
+            const titleCont = document.getElementById('titleContainer');
+            const input = document.getElementById('editNameInput');
+            const newName = input.value.trim();
+
+            if (newName && newName !== workspaces[currentWsId].name) {
+                workspaces[currentWsId].name = newName;
+                document.getElementById('activeProjectName').textContent = newName;
+                renderTabs(); // Atualiza a aba lá em cima
+            }
+
+            input.classList.add('hidden');
+            titleCont.classList.remove('hidden');
+        }
+
+        function renderTabs() {
+            const container = document.getElementById('tabsContainer');
+            container.innerHTML = '';
+
+            Object.keys(workspaces).forEach(id => {
+                const ws = workspaces[id];
+                const isActive = id === currentWsId;
+                const btnClass = isActive 
+                    ? 'bg-blue-600 text-white shadow-md border-blue-500' 
+                    : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-slate-200';
+
+                container.insertAdjacentHTML('beforeend', `
+                    <button onclick="switchWorkspace('${id}')" 
+                        class="whitespace-nowrap px-4 py-2 rounded-t-lg text-sm font-medium border-t border-l border-r transition-colors duration-200 ${btnClass}">
+                        ${ws.name}
+                    </button>
+                `);
+            });
+        }
+
+        function updateOdd(index, newOdd) {
+            if (!currentWsId) return;
+            let oddVal = parseFloat(newOdd);
+            if (isNaN(oddVal) || oddVal <= 1) oddVal = 1.01;
+            workspaces[currentWsId].state[index].odd = oddVal;
+            renderActiveWorkspace();
+        }
+
+        function updateStatus(index, newStatus) {
+            if (!currentWsId) return;
+            const ws = workspaces[currentWsId];
+            ws.state[index].status = newStatus;
+            
+            if (newStatus === 'red') {
+                for (let i = index + 1; i < ws.state.length; i++) ws.state[i].status = 'red';
+            } else if (newStatus === 'green' || newStatus === 'pendente') {
+                for (let i = index + 1; i < ws.state.length; i++) {
+                    if (ws.state[i].status === 'red') ws.state[i].status = 'pendente';
+                }
+            }
+            renderActiveWorkspace();
+        }
+
+        function renderActiveWorkspace() {
+            const emptyState = document.getElementById('emptyState');
+            const gabaritoContent = document.getElementById('gabaritoContent');
+            const tbody = document.getElementById('tableBody');
+
+            if (!currentWsId || !workspaces[currentWsId]) {
+                emptyState.classList.remove('hidden');
+                gabaritoContent.classList.add('hidden');
+                gabaritoContent.classList.remove('flex');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            gabaritoContent.classList.remove('hidden');
+            gabaritoContent.classList.add('flex');
+
+            const ws = workspaces[currentWsId];
+            document.getElementById('activeProjectName').textContent = ws.name;
+            tbody.innerHTML = '';
+
+            let currentStake = ws.initialStake;
+            let totalProb = 1;
+
+            ws.state.forEach((row, index) => {
+                totalProb *= (1 / row.odd); 
+                let possibleReturn = currentStake * row.odd;
+                
+                let rowOpacity = row.status === 'red' ? 'opacity-40 bg-rose-900/10' : '';
+                let displayStake = currentStake;
+                let displayReturn = possibleReturn;
+
+                if (row.status === 'red' && index > 0 && ws.state[index-1].status === 'red') {
+                    displayStake = 0; displayReturn = 0;
+                }
+
+                const btnGreen = row.status === 'green' ? 'bg-emerald-500 text-white shadow-[0_0_10px_rgba(16,185,129,0.4)]' : 'bg-slate-700 text-slate-400 hover:bg-emerald-500/50 hover:text-white';
+                const btnPend = row.status === 'pendente' ? 'bg-amber-500 text-white shadow-[0_0_10px_rgba(245,158,11,0.4)]' : 'bg-slate-700 text-slate-400 hover:bg-amber-500/50 hover:text-white';
+                const btnRed = row.status === 'red' ? 'bg-rose-500 text-white shadow-[0_0_10px_rgba(244,63,94,0.4)]' : 'bg-slate-700 text-slate-400 hover:bg-rose-500/50 hover:text-white';
+
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr class="hover:bg-slate-800/50 transition-colors ${rowOpacity}">
+                        <td class="p-4 font-bold text-slate-500">${index + 1}</td>
+                        <td class="p-4 text-blue-400 font-mono tracking-tight">${formatBRL(displayStake)}</td>
+                        <td class="p-4">
+                            <input type="number" step="0.01" value="${row.odd}" 
+                                onchange="updateOdd(${index}, this.value)"
+                                class="w-24 bg-slate-900 border border-slate-600 focus:border-blue-500 rounded px-3 py-1.5 text-white text-sm transition">
+                        </td>
+                        <td class="p-4 text-emerald-400 font-mono tracking-tight">${formatBRL(displayReturn)}</td>
+                        <td class="p-4 flex justify-center gap-2">
+                            <button onclick="updateStatus(${index}, 'green')" class="w-8 h-8 flex items-center justify-center rounded-md text-sm font-bold transition-all ${btnGreen}">✓</button>
+                            <button onclick="updateStatus(${index}, 'pendente')" class="w-8 h-8 flex items-center justify-center rounded-md text-sm font-bold transition-all ${btnPend}">↻</button>
+                            <button onclick="updateStatus(${index}, 'red')" class="w-8 h-8 flex items-center justify-center rounded-md text-sm font-bold transition-all ${btnRed}">✕</button>
+                        </td>
+                    </tr>
+                `);
+
+                if (row.status === 'green') currentStake = possibleReturn;
+                else if (row.status === 'red') currentStake = 0;
+                else currentStake = possibleReturn; 
+            });
+
+            const probPercent = (totalProb * 100).toFixed(2);
+            document.getElementById('statsHeader').innerHTML = `
+                <div class="text-xs text-slate-400 mb-1">Lucro Projetado Final</div>
+                <div class="text-lg font-bold text-emerald-400">${formatBRL(currentStake)}</div>
+                <div class="text-[10px] mt-1 text-slate-500">Prob. Matemática Ideal: <span class="${probPercent < 10 ? 'text-rose-400' : 'text-amber-400'}">${probPercent}%</span></div>
+            `;
+        }
+
+        // ==========================================
+        // SIMULADOR DE ROTA (ENGENHARIA REVERSA)
+        // ==========================================
+        function generatePlan() {
+            const initial = parseFloat(document.getElementById('planInitial').value);
+            const target = parseFloat(document.getElementById('planTarget').value);
+            const risk = document.getElementById('planRisk').value;
+            const resultDiv = document.getElementById('planResult');
+
+            if (isNaN(initial) || isNaN(target) || initial >= target) {
+                resultDiv.innerHTML = "<span class='text-rose-400 font-medium'>Erro: A meta deve ser maior que o valor inicial.</span>";
+                resultDiv.classList.remove('hidden'); return;
+            }
+
+            const multiplier = target / initial;
+            let targetOdd = 1.30; // Medium
+
+            if (risk === 'very-low') targetOdd = 1.08;
+            else if (risk === 'low') targetOdd = 1.15;
+            else if (risk === 'high') targetOdd = 1.80;
+            else if (risk === 'very-high') targetOdd = 3.00;
+
+            const exactSteps = Math.log(multiplier) / Math.log(targetOdd);
+            const steps = Math.ceil(exactSteps);
+            const actualRequiredOdd = Math.pow(multiplier, 1 / steps).toFixed(2);
+            const impliedProbability = (Math.pow((1/actualRequiredOdd), steps) * 100).toFixed(4);
+
+            let alertColor = steps > 10 || actualRequiredOdd > 2.0 ? 'text-rose-400' : 'text-slate-300';
+
+            resultDiv.innerHTML = `
+                <div class="${alertColor} mb-3 leading-relaxed">
+                    Você precisa acertar <strong class="text-white">${steps} entradas</strong> consecutivas com odd média exata de <strong class="text-blue-400">${actualRequiredOdd}</strong> para atingir a meta.
+                </div>
+                <div class="text-xs text-slate-500 mb-3 border-l-2 border-slate-600 pl-2">
+                    Multiplicador: ${multiplier.toFixed(2)}x <br>
+                    Probabilidade matemática da sequência bater: ~${impliedProbability}%
+                </div>
+                <button onclick="applyPlanToNewWorkspace(${initial}, ${actualRequiredOdd}, ${steps}, '${formatBRL(target)}')" class="w-full bg-slate-800 hover:bg-slate-700 border border-purple-500/50 text-purple-400 py-1.5 rounded-lg transition text-xs font-medium">
+                    Importar Plano como Nova Aba
+                </button>
+            `;
+            resultDiv.classList.remove('hidden');
+        }
+
+        function applyPlanToNewWorkspace(initial, odd, steps, targetStr) {
+            document.getElementById('inputName').value = `Meta ${targetStr}`;
+            document.getElementById('inputInitial').value = initial;
+            document.getElementById('inputOdd').value = odd;
+            document.getElementById('inputSteps').value = steps;
+            createWorkspace();
+            switchView('app'); // Garante que a view da calculadora está ativa
+        }
+
+        // Inicialização
+        renderTips();
+        renderTabs();
+        renderActiveWorkspace();
+    </script>
+</body>
+</html>

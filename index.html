@@ -8,39 +8,37 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0f172a;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; }
         
-        input[type="number"], input[type="text"], select {
-            transition: all 0.2s;
-        }
-        input[type="number"]:focus, input[type="text"]:focus, select:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-        }
+        input[type="number"], input[type="text"], input[type="password"], select { transition: all 0.2s; }
+        input:focus, select:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
 
         .tabs-container::-webkit-scrollbar { height: 6px; }
         .tabs-container::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
         .tabs-container::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
         .tabs-container::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        
+        .modal-backdrop { backdrop-filter: blur(4px); }
     </style>
 </head>
-<body class="text-slate-200 min-h-screen flex flex-col">
+<body class="text-slate-200 min-h-screen flex flex-col relative">
 
-    <nav class="bg-slate-900 border-b border-slate-700 sticky top-0 z-50">
+    <nav class="bg-slate-900 border-b border-slate-700 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 md:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex-shrink-0 flex items-center gap-2">
                     <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
                     <span class="font-bold text-xl text-white tracking-tight">Alavanca<span class="text-blue-500">Pro</span></span>
                 </div>
-                <div class="flex space-x-1 md:space-x-4">
-                    <button onclick="switchView('app')" id="nav-app" class="nav-btn bg-slate-800 text-white px-3 py-2 rounded-md text-sm font-medium transition">Calculadora</button>
-                    <button onclick="switchView('intro')" id="nav-intro" class="nav-btn text-slate-300 hover:bg-slate-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition">Introdução</button>
-                    <button onclick="switchView('tips')" id="nav-tips" class="nav-btn text-slate-300 hover:bg-slate-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition">Dicas Mentais</button>
+                <div class="flex items-center space-x-1 md:space-x-4">
+                    <div class="hidden sm:flex space-x-1 md:space-x-4 mr-4">
+                        <button onclick="switchView('app')" id="nav-app" class="nav-btn bg-slate-800 text-white px-3 py-2 rounded-md text-sm font-medium transition">Calculadora</button>
+                        <button onclick="switchView('intro')" id="nav-intro" class="nav-btn text-slate-300 hover:bg-slate-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition">Introdução</button>
+                        <button onclick="switchView('tips')" id="nav-tips" class="nav-btn text-slate-300 hover:bg-slate-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition">Dicas</button>
+                    </div>
+                    <button onclick="toggleSyncModal()" class="flex items-center gap-2 bg-slate-800 border border-slate-600 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-md text-sm font-bold transition">
+                        <span id="cloudStatus">☁️ Local (Desconectado)</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -62,7 +60,7 @@
                         <div class="space-y-3">
                             <div>
                                 <label class="block text-xs font-medium text-slate-400 mb-1 uppercase tracking-wider">Nome</label>
-                                <input type="text" id="inputName" placeholder="Ex: Projeto Sexta-feira" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm">
+                                <input type="text" id="inputName" placeholder="Ex: Projeto Sexta" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm">
                             </div>
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
@@ -90,8 +88,7 @@
                             <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
                             Calculadora de Rota
                         </h2>
-                        <p class="text-xs text-slate-400 mb-3">Descubra a odd necessária para atingir sua meta.</p>
-                        <div class="space-y-3">
+                        <div class="space-y-3 mt-4">
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <label class="block text-xs font-medium text-slate-400 mb-1 uppercase tracking-wider">Disponível</label>
@@ -103,13 +100,11 @@
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1 uppercase tracking-wider">Perfil de Risco (Odd Alvo)</label>
+                                <label class="block text-xs font-medium text-slate-400 mb-1 uppercase tracking-wider">Perfil (Odd Alvo)</label>
                                 <select id="planRisk" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm">
-                                    <option value="very-low">Muito Seguro (Odd ~1.08)</option>
                                     <option value="low">Baixo (Odd ~1.15)</option>
                                     <option value="medium" selected>Médio (Odd ~1.30)</option>
                                     <option value="high">Alto (Odd ~1.80)</option>
-                                    <option value="very-high">Kamikaze (Odd ~3.00+)</option>
                                 </select>
                             </div>
 
@@ -117,37 +112,33 @@
                                 Gerar Rota Exata
                             </button>
 
-                            <div id="planResult" class="mt-4 p-3 bg-slate-900/50 border border-purple-500/30 rounded-lg hidden text-sm">
-                                </div>
+                            <div id="planResult" class="mt-4 p-3 bg-slate-900/50 border border-purple-500/30 rounded-lg hidden text-sm"></div>
                         </div>
                     </div>
                 </div>
 
                 <div class="lg:col-span-3 flex flex-col gap-4">
                     
-                    <div class="flex items-center gap-2 overflow-x-auto tabs-container pb-2" id="tabsContainer">
-                        </div>
+                    <div class="flex items-center gap-2 overflow-x-auto tabs-container pb-2" id="tabsContainer"></div>
 
                     <div class="bg-slate-800 rounded-xl shadow-xl border border-slate-700/50 overflow-hidden min-h-[500px] flex flex-col">
                         
                         <div id="emptyState" class="m-auto text-center p-8 text-slate-500">
                             <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                             <p class="text-lg font-medium">Nenhuma alavancagem ativa.</p>
-                            <p class="text-sm">Crie uma nova na lateral ou simule uma rota.</p>
+                            <p class="text-sm">Crie uma nova ou conecte a uma Sala na nuvem.</p>
                         </div>
 
                         <div id="gabaritoContent" class="hidden flex-col h-full">
                             <div class="p-6 border-b border-slate-700/50 bg-slate-800/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                                 <div class="flex-1 w-full sm:w-auto">
                                     <div class="flex items-center gap-2 group cursor-pointer" onclick="enableNameEdit()" id="titleContainer">
-                                        <h2 id="activeProjectName" class="text-xl font-bold text-white">Nome do Projeto</h2>
+                                        <h2 id="activeProjectName" class="text-xl font-bold text-white">Projeto</h2>
                                         <svg class="w-4 h-4 text-slate-500 opacity-0 group-hover:opacity-100 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                     </div>
                                     <input type="text" id="editNameInput" class="hidden w-full max-w-xs bg-slate-900 border border-blue-500 rounded px-2 py-1 text-white text-xl font-bold focus:outline-none" onblur="saveNameEdit()" onkeypress="if(event.key === 'Enter') saveNameEdit()">
-                                    <p class="text-xs text-slate-400 mt-1">Gabarito de Execução</p>
                                 </div>
-                                <div id="statsHeader" class="text-sm text-right bg-slate-900 p-3 rounded-lg border border-slate-700/50 min-w-[200px]">
-                                    </div>
+                                <div id="statsHeader" class="text-sm text-right bg-slate-900 p-3 rounded-lg border border-slate-700/50 min-w-[200px]"></div>
                             </div>
 
                             <div class="overflow-x-auto flex-1">
@@ -161,8 +152,7 @@
                                             <th class="p-4 font-medium text-center">Status</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="tableBody" class="divide-y divide-slate-700/50 text-sm">
-                                        </tbody>
+                                    <tbody id="tableBody" class="divide-y divide-slate-700/50 text-sm"></tbody>
                                 </table>
                             </div>
                             
@@ -173,386 +163,295 @@
                                 </button>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
         </div>
 
         <div id="view-intro" class="view-section hidden max-w-4xl mx-auto space-y-8">
-            <div class="bg-slate-800 p-8 rounded-xl shadow-lg border border-slate-700">
-                <h1 class="text-3xl font-bold text-white mb-6 border-b border-slate-600 pb-4">O que é Alavancagem (Soros)?</h1>
-                
-                <div class="space-y-6 text-slate-300 leading-relaxed">
-                    <p>
-                        A estratégia de <strong>Soros</strong> (ou juros compostos em apostas/operações) consiste em pegar o lucro de uma operação bem-sucedida e somá-lo ao capital inicial para a próxima operação. O objetivo é transformar um capital muito pequeno em um montante significativo de forma rápida.
-                    </p>
-
-                    <div class="bg-slate-900 p-6 rounded-lg border-l-4 border-blue-500">
-                        <h3 class="text-xl font-semibold text-white mb-2">A Matemática Simples</h3>
-                        <p>Se você começa com R$ 50 e aposta numa odd 1.50:</p>
-                        <ul class="list-disc pl-5 mt-2 space-y-1">
-                            <li><strong>Entrada 1:</strong> Aposta R$ 50 (Odd 1.50) = Volta R$ 75</li>
-                            <li><strong>Entrada 2:</strong> Aposta os R$ 75 (Odd 1.50) = Volta R$ 112,50</li>
-                            <li><strong>Entrada 3:</strong> Aposta os R$ 112,50 (Odd 1.50) = Volta R$ 168,75</li>
-                        </ul>
-                    </div>
-
-                    <h3 class="text-2xl font-bold text-white mt-8">O Problema (A Armadilha)</h3>
-                    <p>
-                        Na planilha, tudo é perfeito. Na vida real, a estratégia é implacável: <strong>um único erro (Red) zera todo o progresso</strong>. Se você errar na entrada 1 ou na entrada 10, o resultado é o mesmo: banca zerada.
-                    </p>
-
-                    <h3 class="text-2xl font-bold text-white mt-8">Como usar este sistema?</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                        <div class="bg-slate-700/30 p-4 rounded border border-slate-600">
-                            <h4 class="font-bold text-blue-400 mb-2">1. Calculadora Direta</h4>
-                            <p class="text-sm">Você sabe quantas entradas quer fazer e cria o plano. O gabarito permite ajustar as odds no meio do caminho, pois o mercado é dinâmico.</p>
-                        </div>
-                        <div class="bg-slate-700/30 p-4 rounded border border-slate-600">
-                            <h4 class="font-bold text-purple-400 mb-2">2. Calculadora de Rota</h4>
-                            <p class="text-sm">Você não sabe como chegar na meta. Informa quanto tem (ex: R$ 10) e a meta (ex: R$ 500). O sistema calcula quantas entradas seguidas e qual odd média você precisa buscar.</p>
-                        </div>
-                    </div>
-                </div>
+            <div class="bg-slate-800 p-8 rounded-xl border border-slate-700 text-slate-300">
+                <h1 class="text-3xl font-bold text-white mb-4">Sobre o Sistema</h1>
+                <p>Calculadora e rastreador de juros compostos. Sincronize seus dados através do botão de Nuvem na barra superior usando um PIN.</p>
             </div>
         </div>
-
         <div id="view-tips" class="view-section hidden max-w-6xl mx-auto">
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold text-white mb-2">As 30 Regras da Realidade</h1>
-                <p class="text-slate-400">O mercado não tem pena da sua planilha do Excel. Leia antes de operar.</p>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="tipsGrid">
-                </div>
+            <div id="tipsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </div>
 
     </main>
 
+    <div id="syncModal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+        <div class="absolute inset-0 bg-slate-900/80 modal-backdrop" onclick="toggleSyncModal()"></div>
+        <div class="relative bg-slate-800 border border-slate-700 rounded-xl shadow-2xl w-full max-w-sm p-6 m-4">
+            
+            <button onclick="toggleSyncModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-white">Sincronização Simples</h2>
+                <p class="text-slate-400 text-sm mt-2">Use uma senha/código único para conectar seus dispositivos instantaneamente.</p>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-1">Código da Sala (PIN)</label>
+                    <input type="password" id="inputPin" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-3 text-white font-mono tracking-widest text-center text-xl" placeholder="EX: SALA99">
+                </div>
+                
+                <button onclick="connectRoom()" id="btnConnect" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-blue-900/20">
+                    Puxar / Criar Sala
+                </button>
+                
+                <button onclick="disconnectRoom()" id="btnDisconnect" class="hidden w-full bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-500/50 font-bold py-2 rounded-lg transition">
+                    Desconectar desta Sala
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ==========================================
-        // DADOS E ESTADO GERAL
+        // CONFIGURAÇÃO DO BANCO DE DADOS INVISÍVEL
         // ==========================================
+        // ID do seu bucket no KVDB.io
+        const KVDB_BUCKET = '3faqRqg2h1CV8DH89tz9KM'; 
+
+        // ESTADO GLOBAL
         let workspaces = {};
         let currentWsId = null;
-
-        const tips = [
-            "1. O mercado não sabe que você precisa pagar um boleto. Não force entradas.",
-            "2. Soros nível 5 com odd 1.30 tem menos de 26% de chance de bater. Aceite a matemática.",
-            "3. Red faz parte. Quebrar a banca porque tentou recuperar o red de forma desesperada não faz.",
-            "4. Gestão de banca é chato, mas perder tudo em 5 minutos é bem pior.",
-            "5. Se a odd despencou antes de você entrar, o valor evaporou. Pule e busque a próxima.",
-            "6. O green maravilhoso de ontem não garante absolutamente nada hoje.",
-            "7. Dinheiro de alavancagem é o 'dinheiro da pinga', nunca o dinheiro do aluguel.",
-            "8. Fechou 3 greens seguidos e o coração está acelerado? Encerra a aba e saca.",
-            "9. A ganância do apostador é o patrocinador oficial das casas de apostas.",
-            "10. Não opere o time do coração. A emoção emburrece a análise e esconde as estatísticas.",
-            "11. Odd de 1.10 não é 'dinheiro grátis'. É um risco enorme de 100% para lucrar 10%.",
-            "12. Fazer Cash Out cedo demais destrói o conceito matemático dos juros compostos.",
-            "13. Se você não tem paciência para analisar um jogo por 10 minutos, não merece o lucro.",
-            "14. VIP de Telegram não paga sua banca se der red. Confie na sua análise.",
-            "15. Você vai tomar um gol aos 95 minutos. Esteja psicologicamente preparado.",
-            "16. Nenhuma estratégia bate a falta de controle emocional.",
-            "17. Alavancagem precisa de consistência na filtragem, não de quantidade de apostas.",
-            "18. Metas diárias fixas te forçam a operar quando o mercado está horrível.",
-            "19. O All-in constante é uma bomba-relógio. Saiba a hora de guardar uma parte do lucro.",
-            "20. Respeite as linhas asiáticas. Meio gol de proteção salva muitas alavancagens.",
-            "21. Odd não é palpite da casa, é cálculo de probabilidade. Respeite o número.",
-            "22. Evite apostar em competições varzeanas só para bater a meta rápida.",
-            "23. Se você tomou red no primeiro degrau da alavancagem, amanhã você tenta de novo. Pare por hoje.",
-            "24. Acompanhe a partida. A estatística pré-jogo vira pó se o zagueiro for expulso com 5 minutos.",
-            "25. Você não é obrigado a chegar no último nível do gabarito. Sacar no meio do caminho é inteligência.",
-            "26. Mantenha um diário das alavancagens falhas. Descubra onde você fica ganancioso.",
-            "27. Volume alto de apostas diminui sua taxa de acerto. Escolha a dedo.",
-            "28. Cuidado com múltiplas (acumuladas). Elas multiplicam o lucro, mas também multiplicam o risco.",
-            "29. Operar cansado, com sono ou estressado é a forma mais rápida de zerar a conta.",
-            "30. O longo prazo é o único juiz que importa. Sobreviva hoje para operar amanhã."
-        ];
-
-        // Formatação monetária
-        const formatBRL = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+        let sessionPin = localStorage.getItem('alavanca_pin') || null;
+        let syncTimeout = null;
 
         // ==========================================
-        // NAVEGAÇÃO DE VIEWS
+        // LÓGICA DE SINCRONIZAÇÃO (KVDB REST API)
         // ==========================================
-        function switchView(viewName) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
-            document.getElementById('view-' + viewName).classList.remove('hidden');
+        async function loadData() {
+            if (sessionPin) {
+                document.getElementById('cloudStatus').innerHTML = '☁️ Sincronizando...';
+                document.getElementById('inputPin').value = sessionPin;
+                
+                if (KVDB_BUCKET === 'COLE_SEU_CODIGO_AQUI' || KVDB_BUCKET === '') {
+                    alert('Código KVDB não configurado!');
+                    disconnectRoom();
+                    return;
+                }
 
-            // Reset navbar styles
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('bg-slate-800', 'text-white');
-                btn.classList.add('text-slate-300');
-            });
+                try {
+                    const response = await fetch(`https://kvdb.io/${KVDB_BUCKET}/${sessionPin}`);
+                    
+                    if (response.ok) {
+                        const text = await response.text();
+                        const data = JSON.parse(text);
+                        workspaces = data.workspaces || {};
+                        currentWsId = data.currentWsId || null;
+                        document.getElementById('cloudStatus').innerHTML = `☁️ Sala: ${sessionPin}`;
+                    } else if (response.status === 404) {
+                        triggerSave();
+                        document.getElementById('cloudStatus').innerHTML = `☁️ Sala: ${sessionPin}`;
+                    } else {
+                        loadLocalOnly();
+                        document.getElementById('cloudStatus').innerHTML = '⚠️ Erro Nuvem';
+                    }
+                } catch (e) {
+                    console.warn("Erro de conexão", e);
+                    loadLocalOnly();
+                    document.getElementById('cloudStatus').innerHTML = '⚠️ Erro Nuvem';
+                }
+            } else {
+                loadLocalOnly();
+                document.getElementById('cloudStatus').innerHTML = '☁️ Local (Desconectado)';
+            }
             
-            // Set active navbar style
-            const activeBtn = document.getElementById('nav-' + viewName);
-            if(activeBtn) {
-                activeBtn.classList.remove('text-slate-300');
-                activeBtn.classList.add('bg-slate-800', 'text-white');
+            renderTabs();
+            renderActiveWorkspace();
+            updateModalUI();
+        }
+
+        function loadLocalOnly() {
+            const savedData = localStorage.getItem('alavancapro_data');
+            if (savedData) {
+                try {
+                    const parsed = JSON.parse(savedData);
+                    workspaces = parsed.workspaces || {};
+                    currentWsId = parsed.currentWsId || null;
+                } catch (e) { console.error("Erro local", e); }
+            }
+        }
+
+        function triggerSave() {
+            const stateObj = { workspaces, currentWsId };
+            
+            localStorage.setItem('alavancapro_data', JSON.stringify(stateObj));
+            
+            if (sessionPin) {
+                document.getElementById('cloudStatus').innerHTML = '⏳ Salvando...';
+                clearTimeout(syncTimeout);
+                
+                syncTimeout = setTimeout(async () => {
+                    try {
+                        const response = await fetch(`https://kvdb.io/${KVDB_BUCKET}/${sessionPin}`, {
+                            method: 'PUT',
+                            body: JSON.stringify(stateObj)
+                        });
+                        
+                        if(response.ok) {
+                            document.getElementById('cloudStatus').innerHTML = `☁️ Sala: ${sessionPin}`;
+                        } else {
+                            document.getElementById('cloudStatus').innerHTML = '⚠️ Erro Nuvem';
+                        }
+                    } catch (e) {
+                        document.getElementById('cloudStatus').innerHTML = '⚠️ Erro Nuvem';
+                    }
+                }, 800); 
+            }
+        }
+
+        async function connectRoom() {
+            const pin = document.getElementById('inputPin').value.trim().toUpperCase();
+            if (!pin) return alert('Digite um código!');
+            
+            sessionPin = pin;
+            localStorage.setItem('alavanca_pin', pin);
+            
+            toggleSyncModal();
+            await loadData();
+        }
+
+        function disconnectRoom() {
+            sessionPin = null;
+            localStorage.removeItem('alavanca_pin');
+            document.getElementById('inputPin').value = '';
+            document.getElementById('cloudStatus').innerHTML = '☁️ Local (Desconectado)';
+            toggleSyncModal();
+            updateModalUI();
+        }
+
+        function toggleSyncModal() {
+            document.getElementById('syncModal').classList.toggle('hidden');
+            updateModalUI();
+        }
+
+        function updateModalUI() {
+            if (sessionPin) {
+                document.getElementById('btnConnect').textContent = 'Forçar Atualização / Trocar PIN';
+                document.getElementById('btnDisconnect').classList.remove('hidden');
+            } else {
+                document.getElementById('btnConnect').textContent = 'Conectar na Sala';
+                document.getElementById('btnDisconnect').classList.add('hidden');
             }
         }
 
         // ==========================================
-        // RENDER DE DICAS
+        // UI GERAL E CALCULADORA
         // ==========================================
-        function renderTips() {
-            const grid = document.getElementById('tipsGrid');
-            tips.forEach((tip, index) => {
-                const isImportant = index % 5 === 0; // Destaca algumas
-                const border = isImportant ? 'border-blue-500/50' : 'border-slate-700';
-                const bg = isImportant ? 'bg-slate-800/80' : 'bg-slate-800/40';
-                
-                grid.innerHTML += `
-                    <div class="p-5 rounded-xl border ${border} ${bg} hover:bg-slate-700 transition">
-                        <p class="text-sm text-slate-300 leading-relaxed font-medium">${tip}</p>
-                    </div>
-                `;
-            });
+        const formatBRL = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+
+        function switchView(v) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            document.getElementById('view-' + v).classList.remove('hidden');
         }
 
-        // ==========================================
-        // LÓGICA DA CALCULADORA / GABARITO
-        // ==========================================
         function createWorkspace() {
             let nameInput = document.getElementById('inputName').value.trim();
             const initial = parseFloat(document.getElementById('inputInitial').value);
             const baseOdd = parseFloat(document.getElementById('inputOdd').value);
             const steps = parseInt(document.getElementById('inputSteps').value);
-
-            if (isNaN(initial) || isNaN(baseOdd) || isNaN(steps) || steps < 1) {
-                alert('Parâmetros inválidos.'); return;
-            }
-
+            if (isNaN(initial) || isNaN(baseOdd) || isNaN(steps) || steps < 1) return;
             if (!nameInput) nameInput = `Alavancagem ${Object.keys(workspaces).length + 1}`;
-
-            const id = 'ws_' + Date.now();
-            let state = Array.from({length: steps}, () => ({ odd: baseOdd, status: 'pendente' }));
-
-            workspaces[id] = { id, name: nameInput, initialStake: initial, state };
-            currentWsId = id;
             
-            document.getElementById('inputName').value = '';
-            renderTabs();
-            renderActiveWorkspace();
-        }
-
-        function switchWorkspace(id) {
+            const id = 'ws_' + Date.now();
+            workspaces[id] = { id, name: nameInput, initialStake: initial, state: Array.from({length: steps}, () => ({ odd: baseOdd, status: 'pendente' })) };
             currentWsId = id;
-            renderTabs();
-            renderActiveWorkspace();
+            document.getElementById('inputName').value = '';
+            
+            triggerSave(); renderTabs(); renderActiveWorkspace();
         }
 
+        function switchWorkspace(id) { currentWsId = id; triggerSave(); renderTabs(); renderActiveWorkspace(); }
+        
         function deleteCurrentWorkspace() {
             if (!currentWsId) return;
-            if(confirm(`Excluir a pasta "${workspaces[currentWsId].name}"?`)) {
+            if(confirm('Tem certeza que deseja excluir esta pasta inteira?')) {
                 delete workspaces[currentWsId];
-                const remaining = Object.keys(workspaces);
-                currentWsId = remaining.length ? remaining[remaining.length - 1] : null;
-                renderTabs();
-                renderActiveWorkspace();
+                const keys = Object.keys(workspaces);
+                currentWsId = keys.length ? keys[keys.length - 1] : null;
+                triggerSave(); renderTabs(); renderActiveWorkspace();
             }
         }
 
-        // ----- EDIÇÃO DE NOME (RENAME) -----
-        function enableNameEdit() {
-            if (!currentWsId) return;
-            const titleCont = document.getElementById('titleContainer');
-            const input = document.getElementById('editNameInput');
-            
-            titleCont.classList.add('hidden');
-            input.value = workspaces[currentWsId].name;
-            input.classList.remove('hidden');
-            input.focus();
-        }
-
-        function saveNameEdit() {
-            if (!currentWsId) return;
-            const titleCont = document.getElementById('titleContainer');
-            const input = document.getElementById('editNameInput');
-            const newName = input.value.trim();
-
-            if (newName && newName !== workspaces[currentWsId].name) {
-                workspaces[currentWsId].name = newName;
-                document.getElementById('activeProjectName').textContent = newName;
-                renderTabs(); // Atualiza a aba lá em cima
-            }
-
-            input.classList.add('hidden');
-            titleCont.classList.remove('hidden');
+        function enableNameEdit() { document.getElementById('titleContainer').classList.add('hidden'); const i = document.getElementById('editNameInput'); i.value = workspaces[currentWsId].name; i.classList.remove('hidden'); i.focus(); }
+        function saveNameEdit() { const i = document.getElementById('editNameInput'); const v = i.value.trim(); if (v && v !== workspaces[currentWsId].name) { workspaces[currentWsId].name = v; triggerSave(); renderTabs(); } i.classList.add('hidden'); document.getElementById('titleContainer').classList.remove('hidden'); renderActiveWorkspace(); }
+        
+        function updateOdd(index, newOdd) { let o = parseFloat(newOdd); workspaces[currentWsId].state[index].odd = (isNaN(o) || o<=1) ? 1.01 : o; triggerSave(); renderActiveWorkspace(); }
+        
+        function updateStatus(index, ns) {
+            const ws = workspaces[currentWsId]; ws.state[index].status = ns;
+            if (ns === 'red') for (let i = index + 1; i < ws.state.length; i++) ws.state[i].status = 'red';
+            else if (ns === 'green' || ns === 'pendente') for (let i = index + 1; i < ws.state.length; i++) if (ws.state[i].status === 'red') ws.state[i].status = 'pendente';
+            triggerSave(); renderActiveWorkspace();
         }
 
         function renderTabs() {
-            const container = document.getElementById('tabsContainer');
-            container.innerHTML = '';
-
+            const c = document.getElementById('tabsContainer'); c.innerHTML = '';
             Object.keys(workspaces).forEach(id => {
-                const ws = workspaces[id];
-                const isActive = id === currentWsId;
-                const btnClass = isActive 
-                    ? 'bg-blue-600 text-white shadow-md border-blue-500' 
-                    : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-slate-200';
-
-                container.insertAdjacentHTML('beforeend', `
-                    <button onclick="switchWorkspace('${id}')" 
-                        class="whitespace-nowrap px-4 py-2 rounded-t-lg text-sm font-medium border-t border-l border-r transition-colors duration-200 ${btnClass}">
-                        ${ws.name}
-                    </button>
-                `);
+                const btnClass = id === currentWsId ? 'bg-blue-600 text-white shadow-md border-blue-500' : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700';
+                c.insertAdjacentHTML('beforeend', `<button onclick="switchWorkspace('${id}')" class="whitespace-nowrap px-4 py-2 rounded-t-lg text-sm font-medium border-t border-l border-r transition ${btnClass}">${workspaces[id].name}</button>`);
             });
-        }
-
-        function updateOdd(index, newOdd) {
-            if (!currentWsId) return;
-            let oddVal = parseFloat(newOdd);
-            if (isNaN(oddVal) || oddVal <= 1) oddVal = 1.01;
-            workspaces[currentWsId].state[index].odd = oddVal;
-            renderActiveWorkspace();
-        }
-
-        function updateStatus(index, newStatus) {
-            if (!currentWsId) return;
-            const ws = workspaces[currentWsId];
-            ws.state[index].status = newStatus;
-            
-            if (newStatus === 'red') {
-                for (let i = index + 1; i < ws.state.length; i++) ws.state[i].status = 'red';
-            } else if (newStatus === 'green' || newStatus === 'pendente') {
-                for (let i = index + 1; i < ws.state.length; i++) {
-                    if (ws.state[i].status === 'red') ws.state[i].status = 'pendente';
-                }
-            }
-            renderActiveWorkspace();
         }
 
         function renderActiveWorkspace() {
-            const emptyState = document.getElementById('emptyState');
-            const gabaritoContent = document.getElementById('gabaritoContent');
-            const tbody = document.getElementById('tableBody');
+            const empty = document.getElementById('emptyState'), content = document.getElementById('gabaritoContent'), tbody = document.getElementById('tableBody');
+            if (!currentWsId || !workspaces[currentWsId]) { empty.classList.remove('hidden'); content.classList.add('hidden'); content.classList.remove('flex'); return; }
+            empty.classList.add('hidden'); content.classList.remove('hidden'); content.classList.add('flex');
+            const ws = workspaces[currentWsId]; document.getElementById('activeProjectName').textContent = ws.name; tbody.innerHTML = '';
 
-            if (!currentWsId || !workspaces[currentWsId]) {
-                emptyState.classList.remove('hidden');
-                gabaritoContent.classList.add('hidden');
-                gabaritoContent.classList.remove('flex');
-                return;
-            }
-
-            emptyState.classList.add('hidden');
-            gabaritoContent.classList.remove('hidden');
-            gabaritoContent.classList.add('flex');
-
-            const ws = workspaces[currentWsId];
-            document.getElementById('activeProjectName').textContent = ws.name;
-            tbody.innerHTML = '';
-
-            let currentStake = ws.initialStake;
-            let totalProb = 1;
-
-            ws.state.forEach((row, index) => {
-                totalProb *= (1 / row.odd); 
-                let possibleReturn = currentStake * row.odd;
+            let stake = ws.initialStake, prob = 1;
+            ws.state.forEach((row, i) => {
+                prob *= (1 / row.odd); let ret = stake * row.odd, dStake = stake, dRet = ret;
+                if (row.status === 'red' && i > 0 && ws.state[i-1].status === 'red') { dStake = 0; dRet = 0; }
+                const op = row.status === 'red' ? 'opacity-40 bg-rose-900/10' : '';
                 
-                let rowOpacity = row.status === 'red' ? 'opacity-40 bg-rose-900/10' : '';
-                let displayStake = currentStake;
-                let displayReturn = possibleReturn;
-
-                if (row.status === 'red' && index > 0 && ws.state[index-1].status === 'red') {
-                    displayStake = 0; displayReturn = 0;
-                }
-
-                const btnGreen = row.status === 'green' ? 'bg-emerald-500 text-white shadow-[0_0_10px_rgba(16,185,129,0.4)]' : 'bg-slate-700 text-slate-400 hover:bg-emerald-500/50 hover:text-white';
-                const btnPend = row.status === 'pendente' ? 'bg-amber-500 text-white shadow-[0_0_10px_rgba(245,158,11,0.4)]' : 'bg-slate-700 text-slate-400 hover:bg-amber-500/50 hover:text-white';
-                const btnRed = row.status === 'red' ? 'bg-rose-500 text-white shadow-[0_0_10px_rgba(244,63,94,0.4)]' : 'bg-slate-700 text-slate-400 hover:bg-rose-500/50 hover:text-white';
-
-                tbody.insertAdjacentHTML('beforeend', `
-                    <tr class="hover:bg-slate-800/50 transition-colors ${rowOpacity}">
-                        <td class="p-4 font-bold text-slate-500">${index + 1}</td>
-                        <td class="p-4 text-blue-400 font-mono tracking-tight">${formatBRL(displayStake)}</td>
-                        <td class="p-4">
-                            <input type="number" step="0.01" value="${row.odd}" 
-                                onchange="updateOdd(${index}, this.value)"
-                                class="w-24 bg-slate-900 border border-slate-600 focus:border-blue-500 rounded px-3 py-1.5 text-white text-sm transition">
-                        </td>
-                        <td class="p-4 text-emerald-400 font-mono tracking-tight">${formatBRL(displayReturn)}</td>
-                        <td class="p-4 flex justify-center gap-2">
-                            <button onclick="updateStatus(${index}, 'green')" class="w-8 h-8 flex items-center justify-center rounded-md text-sm font-bold transition-all ${btnGreen}">✓</button>
-                            <button onclick="updateStatus(${index}, 'pendente')" class="w-8 h-8 flex items-center justify-center rounded-md text-sm font-bold transition-all ${btnPend}">↻</button>
-                            <button onclick="updateStatus(${index}, 'red')" class="w-8 h-8 flex items-center justify-center rounded-md text-sm font-bold transition-all ${btnRed}">✕</button>
-                        </td>
-                    </tr>
-                `);
-
-                if (row.status === 'green') currentStake = possibleReturn;
-                else if (row.status === 'red') currentStake = 0;
-                else currentStake = possibleReturn; 
+                tbody.insertAdjacentHTML('beforeend', `<tr class="hover:bg-slate-800/50 transition-colors ${op}">
+                    <td class="p-4 font-bold text-slate-500">${i + 1}</td>
+                    <td class="p-4 text-blue-400 font-mono tracking-tight">${formatBRL(dStake)}</td>
+                    <td class="p-4"><input type="number" step="0.01" value="${row.odd}" onchange="updateOdd(${i}, this.value)" class="w-24 bg-slate-900 border border-slate-600 focus:border-blue-500 rounded px-3 py-1.5 text-white text-sm transition"></td>
+                    <td class="p-4 text-emerald-400 font-mono tracking-tight">${formatBRL(dRet)}</td>
+                    <td class="p-4 flex justify-center gap-2">
+                        <button onclick="updateStatus(${i}, 'green')" class="w-8 h-8 rounded-md text-sm font-bold ${row.status === 'green' ? 'bg-emerald-500 text-white shadow-[0_0_10px_rgba(16,185,129,0.4)]' : 'bg-slate-700 text-slate-400 hover:bg-emerald-500/50 hover:text-white'}">✓</button>
+                        <button onclick="updateStatus(${i}, 'pendente')" class="w-8 h-8 rounded-md text-sm font-bold ${row.status === 'pendente' ? 'bg-amber-500 text-white shadow-[0_0_10px_rgba(245,158,11,0.4)]' : 'bg-slate-700 text-slate-400 hover:bg-amber-500/50 hover:text-white'}">↻</button>
+                        <button onclick="updateStatus(${i}, 'red')" class="w-8 h-8 rounded-md text-sm font-bold ${row.status === 'red' ? 'bg-rose-500 text-white shadow-[0_0_10px_rgba(244,63,94,0.4)]' : 'bg-slate-700 text-slate-400 hover:bg-rose-500/50 hover:text-white'}">✕</button>
+                    </td></tr>`);
+                stake = (row.status === 'green' || row.status === 'pendente') ? ret : 0;
             });
-
-            const probPercent = (totalProb * 100).toFixed(2);
-            document.getElementById('statsHeader').innerHTML = `
-                <div class="text-xs text-slate-400 mb-1">Lucro Projetado Final</div>
-                <div class="text-lg font-bold text-emerald-400">${formatBRL(currentStake)}</div>
-                <div class="text-[10px] mt-1 text-slate-500">Prob. Matemática Ideal: <span class="${probPercent < 10 ? 'text-rose-400' : 'text-amber-400'}">${probPercent}%</span></div>
-            `;
+            const probPercent = (prob * 100).toFixed(2);
+            document.getElementById('statsHeader').innerHTML = `<div class="text-xs text-slate-400 mb-1">Lucro Projetado Final</div><div class="text-lg font-bold text-emerald-400">${formatBRL(stake)}</div><div class="text-[10px] mt-1 text-slate-500">Prob. Matemática Ideal: <span class="${probPercent < 10 ? 'text-rose-400' : 'text-amber-400'}">${probPercent}%</span></div>`;
         }
 
-        // ==========================================
-        // SIMULADOR DE ROTA (ENGENHARIA REVERSA)
-        // ==========================================
         function generatePlan() {
-            const initial = parseFloat(document.getElementById('planInitial').value);
-            const target = parseFloat(document.getElementById('planTarget').value);
-            const risk = document.getElementById('planRisk').value;
-            const resultDiv = document.getElementById('planResult');
-
-            if (isNaN(initial) || isNaN(target) || initial >= target) {
-                resultDiv.innerHTML = "<span class='text-rose-400 font-medium'>Erro: A meta deve ser maior que o valor inicial.</span>";
-                resultDiv.classList.remove('hidden'); return;
-            }
-
-            const multiplier = target / initial;
-            let targetOdd = 1.30; // Medium
-
-            if (risk === 'very-low') targetOdd = 1.08;
-            else if (risk === 'low') targetOdd = 1.15;
-            else if (risk === 'high') targetOdd = 1.80;
-            else if (risk === 'very-high') targetOdd = 3.00;
-
-            const exactSteps = Math.log(multiplier) / Math.log(targetOdd);
-            const steps = Math.ceil(exactSteps);
-            const actualRequiredOdd = Math.pow(multiplier, 1 / steps).toFixed(2);
-            const impliedProbability = (Math.pow((1/actualRequiredOdd), steps) * 100).toFixed(4);
-
-            let alertColor = steps > 10 || actualRequiredOdd > 2.0 ? 'text-rose-400' : 'text-slate-300';
-
-            resultDiv.innerHTML = `
-                <div class="${alertColor} mb-3 leading-relaxed">
-                    Você precisa acertar <strong class="text-white">${steps} entradas</strong> consecutivas com odd média exata de <strong class="text-blue-400">${actualRequiredOdd}</strong> para atingir a meta.
-                </div>
-                <div class="text-xs text-slate-500 mb-3 border-l-2 border-slate-600 pl-2">
-                    Multiplicador: ${multiplier.toFixed(2)}x <br>
-                    Probabilidade matemática da sequência bater: ~${impliedProbability}%
-                </div>
-                <button onclick="applyPlanToNewWorkspace(${initial}, ${actualRequiredOdd}, ${steps}, '${formatBRL(target)}')" class="w-full bg-slate-800 hover:bg-slate-700 border border-purple-500/50 text-purple-400 py-1.5 rounded-lg transition text-xs font-medium">
-                    Importar Plano como Nova Aba
-                </button>
-            `;
-            resultDiv.classList.remove('hidden');
+            const ini = parseFloat(document.getElementById('planInitial').value), tgt = parseFloat(document.getElementById('planTarget').value);
+            if (isNaN(ini) || isNaN(tgt) || ini >= tgt) return alert("A meta precisa ser maior que o valor disponível.");
+            const mult = tgt / ini, steps = Math.ceil(Math.log(mult) / Math.log(document.getElementById('planRisk').value === 'low' ? 1.15 : document.getElementById('planRisk').value === 'medium' ? 1.30 : 1.80));
+            const exactOdd = Math.pow(mult, 1 / steps).toFixed(2);
+            document.getElementById('planResult').innerHTML = `<div class="text-slate-300 mb-2">Acerte <strong class="text-white">${steps} entradas</strong> seguidas com odd média exata de <strong class="text-blue-400">${exactOdd}</strong>.</div><button onclick="document.getElementById('inputName').value='Meta ${formatBRL(tgt)}'; document.getElementById('inputInitial').value=${ini}; document.getElementById('inputOdd').value=${exactOdd}; document.getElementById('inputSteps').value=${steps}; createWorkspace(); switchView('app');" class="w-full bg-slate-800 border border-purple-500/50 text-purple-400 hover:bg-slate-700 py-1.5 rounded-lg text-xs font-medium transition">Importar Plano como Nova Aba</button>`;
+            document.getElementById('planResult').classList.remove('hidden');
         }
 
-        function applyPlanToNewWorkspace(initial, odd, steps, targetStr) {
-            document.getElementById('inputName').value = `Meta ${targetStr}`;
-            document.getElementById('inputInitial').value = initial;
-            document.getElementById('inputOdd').value = odd;
-            document.getElementById('inputSteps').value = steps;
-            createWorkspace();
-            switchView('app'); // Garante que a view da calculadora está ativa
-        }
+        const tips = [
+            "1. O mercado não sabe que você precisa pagar boleto. Não force entradas.",
+            "2. Soros nível 5 com odd 1.30 tem menos de 26% de chance de bater.",
+            "3. Red faz parte. Quebrar tentando recuperar, não.",
+            "4. Gestão é chato, perder tudo em 5 minutos é pior.",
+            "5. Odd despencou antes de você entrar? Pule.",
+            "6. O green maravilhoso de ontem não garante nada hoje.",
+            "7. Dinheiro de alavancagem não é dinheiro de aluguel.",
+            "8. Coração disparou depois de 3 greens? Saca logo.",
+            "9. A ganância patrocina a casa de apostas.",
+            "10. Esqueça operar jogo do seu time. A emoção emburrece."
+        ];
+        document.getElementById('tipsGrid').innerHTML = tips.map(t => `<div class="p-5 bg-slate-800/60 border border-slate-700 hover:bg-slate-700 transition rounded-xl text-sm font-medium text-slate-300">${t}</div>`).join('');
 
-        // Inicialização
-        renderTips();
-        renderTabs();
-        renderActiveWorkspace();
+        window.onload = loadData;
     </script>
 </body>
 </html>

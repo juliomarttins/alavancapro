@@ -189,8 +189,8 @@
             </button>
 
             <div class="text-center mb-6">
-                <h2 class="text-2xl font-bold text-white">Sincronização Simples</h2>
-                <p class="text-slate-400 text-sm mt-2">Use uma senha/código único para conectar seus dispositivos instantaneamente.</p>
+                <h2 class="text-2xl font-bold text-white">Sincronização Cloud</h2>
+                <p class="text-slate-400 text-sm mt-2">Use uma senha/código único para conectar seus dispositivos instantaneamente via Pantry.</p>
             </div>
 
             <div class="space-y-4">
@@ -212,10 +212,9 @@
 
     <script>
         // ==========================================
-        // CONFIGURAÇÃO DO BANCO DE DADOS INVISÍVEL
+        // CONFIGURAÇÃO DO PANTRY CLOUD
         // ==========================================
-        // ID do seu bucket no KVDB.io
-        const KVDB_BUCKET = '3faqRqg2h1CV8DH89tz9KM'; 
+        const PANTRY_ID = 'd129e225-7f17-4ab5-802d-1cf3a885c375'; 
 
         // ESTADO GLOBAL
         let workspaces = {};
@@ -224,29 +223,26 @@
         let syncTimeout = null;
 
         // ==========================================
-        // LÓGICA DE SINCRONIZAÇÃO (KVDB REST API)
+        // LÓGICA DE SINCRONIZAÇÃO (PANTRY CLOUD)
         // ==========================================
         async function loadData() {
             if (sessionPin) {
                 document.getElementById('cloudStatus').innerHTML = '☁️ Sincronizando...';
                 document.getElementById('inputPin').value = sessionPin;
                 
-                if (KVDB_BUCKET === 'COLE_SEU_CODIGO_AQUI' || KVDB_BUCKET === '') {
-                    alert('Código KVDB não configurado!');
-                    disconnectRoom();
-                    return;
-                }
-
                 try {
-                    const response = await fetch(`https://kvdb.io/${KVDB_BUCKET}/${sessionPin}`);
+                    // Puxa a "cesta" com o nome do PIN
+                    const response = await fetch(`https://getpantry.cloud/apiv1/pantry/${PANTRY_ID}/basket/${sessionPin}`);
                     
                     if (response.ok) {
-                        const text = await response.text();
-                        const data = JSON.parse(text);
-                        workspaces = data.workspaces || {};
-                        currentWsId = data.currentWsId || null;
+                        const data = await response.json();
+                        if(data.alavancapro) {
+                            workspaces = data.alavancapro.workspaces || {};
+                            currentWsId = data.alavancapro.currentWsId || null;
+                        }
                         document.getElementById('cloudStatus').innerHTML = `☁️ Sala: ${sessionPin}`;
-                    } else if (response.status === 404) {
+                    } else if (response.status === 400 || response.status === 404) {
+                        // Cesta não existe ainda, então cria com os dados locais
                         triggerSave();
                         document.getElementById('cloudStatus').innerHTML = `☁️ Sala: ${sessionPin}`;
                     } else {
@@ -282,17 +278,22 @@
         function triggerSave() {
             const stateObj = { workspaces, currentWsId };
             
+            // Backup local instantâneo
             localStorage.setItem('alavancapro_data', JSON.stringify(stateObj));
             
+            // Salva na nuvem se a sala estiver aberta
             if (sessionPin) {
                 document.getElementById('cloudStatus').innerHTML = '⏳ Salvando...';
                 clearTimeout(syncTimeout);
                 
                 syncTimeout = setTimeout(async () => {
                     try {
-                        const response = await fetch(`https://kvdb.io/${KVDB_BUCKET}/${sessionPin}`, {
-                            method: 'PUT',
-                            body: JSON.stringify(stateObj)
+                        const response = await fetch(`https://getpantry.cloud/apiv1/pantry/${PANTRY_ID}/basket/${sessionPin}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ alavancapro: stateObj })
                         });
                         
                         if(response.ok) {
@@ -303,13 +304,13 @@
                     } catch (e) {
                         document.getElementById('cloudStatus').innerHTML = '⚠️ Erro Nuvem';
                     }
-                }, 800); 
+                }, 800); // 800ms de atraso para não metralhar a API
             }
         }
 
         async function connectRoom() {
             const pin = document.getElementById('inputPin').value.trim().toUpperCase();
-            if (!pin) return alert('Digite um código!');
+            if (!pin) return alert('Digite um código de sala!');
             
             sessionPin = pin;
             localStorage.setItem('alavanca_pin', pin);
